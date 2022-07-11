@@ -1,0 +1,12 @@
+create_table("users") {
+	t.Column("id", "integer", {primary: true})
+	t.Column("name", "string", {"default": ""})
+  t.Column("email", "string", {default: ""})
+  t.Column("surname", "string", {"default": ""})
+	t.Column("password", "string", {"default": ""})
+}
+
+sql("alter table users alter column created_at set default now();")
+sql("alter table users alter column updated_at set default now();")
+
+sql("insert into users (name,  email, surname, password, created_at, updated_at) values ('Jonh', 'userAle@email.com', 'jonjon', '123456789', now(), now());")

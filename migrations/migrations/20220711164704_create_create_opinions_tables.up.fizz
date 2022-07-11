@@ -1,0 +1,11 @@
+create_table("opinions") {
+	t.Column("id", "integer", {primary: true})
+	t.Column("feedback", "text", {"null": false})
+	t.Column("id_user", "integer", {"null": false})
+	t.Column("id_book", "integer", {"null": false})
+}
+
+sql("alter table opinions alter column created_at set default now();")
+sql("alter table opinions alter column updated_at set default now();")
+
+sql("insert into opinions (feedback,  id_user, id_book, created_at, updated_at) values ('lorem impsum lorem impsum lorem impsum lorem impsum', 1, 1, now(), now());")

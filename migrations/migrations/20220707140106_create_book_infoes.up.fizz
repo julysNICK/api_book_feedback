@@ -1,0 +1,13 @@
+create_table("book_info") {
+	  t.Column("id", "integer", {primary: true})
+    t.Column("title", "string", {"default": ""})
+    t.Column("name_author", "string", {})
+    t.Column("description", "text", {"default": ""})
+		t.Column("image", "string", {"default": ""})
+    t.Column("year_release", "datetime", {})
+}
+
+sql("alter table book_info alter column created_at set default now();")
+sql("alter table book_info alter column updated_at set default now();")
+
+sql("insert into book_info (title,  name_author, description, image, year_release,created_at, updated_at) values ('Um dia dps', 'billy', 'A very nice book.', 'https://odgraph.com.br/capa-de-livro-o-que-levar-em-conta-na-hora-de-criar/', now(),now(), now());")
