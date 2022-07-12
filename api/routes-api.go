@@ -22,6 +22,7 @@ func (app *application) routes() http.Handler {
 	mux.Get("/book", app.ListBooksHandle)
 	mux.Post("/book", app.IsAuthorized(app.SaveBookHandle))
 	mux.Post("/opinion", app.IsAuthorized(app.SaveOpinionHandle))
+	mux.Get("/opinions", app.IsAuthorized(app.ListOpinionsHandle))
 	mux.Post("/user", app.SaveUserHandle)
 	mux.Post("/user/login", app.LoginUserHandle)
 	return mux

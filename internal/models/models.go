@@ -318,3 +318,33 @@ func (m *DBModel) InsertOpinions(opinion Opinions) (int, error) {
 	}
 	return int(id), nil
 }
+
+func (m *DBModel) GetAllOpinions() ([]Opinions, error) {
+	var opinion []Opinions
+	row, err := m.DB.Query("SELECT * FROM opinions")
+
+	defer m.DB.Close()
+
+	if err != nil {
+		println(err.Error())
+		return opinion, err
+	}
+
+	for row.Next() {
+		var id int
+		var feedback string
+		var id_user int
+		var id_book int
+
+		var createdAt time.Time
+		var updatedAt time.Time
+		err = row.Scan(&id, &feedback, &id_user, &id_book, &createdAt, &updatedAt)
+		if err != nil {
+			println(err.Error())
+		}
+
+		opinion = append(opinion, Opinions{ID: id, Feedback: feedback, IDUser: id_user, IDBook: id_book, CreatedAt: createdAt, UpdatedAt: updatedAt})
+	}
+
+	return opinion, nil
+}

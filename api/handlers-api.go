@@ -331,6 +331,31 @@ func (app *application) LoginUserHandle(w http.ResponseWriter, r *http.Request) 
 }
 
 // opinions
+func (app *application) ListOpinionsHandle(w http.ResponseWriter, r *http.Request) {
+
+	txnData, err := app.DB.GetAllOpinions()
+	if err != nil {
+		app.errorLog.Println(err)
+		return
+	}
+
+	j := jsonResponse{
+		OK:      true,
+		Message: "Lista de opiniões",
+		Content: txnData,
+	}
+
+	out, err := json.MarshalIndent(j, "", "   ")
+
+	if err != nil {
+		app.errorLog.Println(err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(out)
+}
+
 func (app *application) SaveOpinionHandle(w http.ResponseWriter, r *http.Request) {
 	var txnData OpinionData
 	jsonFormat := launchjson.ApplicationLog{
