@@ -317,6 +317,32 @@ func (m *DBModel) GetOpinionByIdBook(id int) (Opinions, error) {
 	return opinion, nil
 
 }
+func (m *DBModel) GetOpinionByIdUser(id int) (Opinions, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	var opinion Opinions
+	row := m.DB.QueryRowContext(ctx, `
+		select 
+			id, feedback ,id_user ,id_book, created_at, updated_at
+		from 
+			opinions 
+		where id_user = ?`, id)
+
+	err := row.Scan(
+		&opinion.ID,
+		&opinion.Feedback,
+		&opinion.IDUser,
+		&opinion.IDBook,
+		&opinion.CreatedAt,
+		&opinion.UpdatedAt,
+	)
+	if err != nil {
+		return opinion, err
+	}
+
+	return opinion, nil
+
+}
 func (m *DBModel) InsertOpinions(opinion Opinions) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()

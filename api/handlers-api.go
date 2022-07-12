@@ -331,7 +331,6 @@ func (app *application) LoginUserHandle(w http.ResponseWriter, r *http.Request) 
 }
 
 // opinions
-
 func (app *application) GetOpinionByIdBook(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	jsonFormat := launchjson.ApplicationLog{
@@ -341,6 +340,36 @@ func (app *application) GetOpinionByIdBook(w http.ResponseWriter, r *http.Reques
 	bookId, _ := strconv.Atoi(id)
 
 	opinion, err := app.DB.GetOpinionByIdBook(bookId)
+
+	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			jsonFormat.LaunchJsonErrorMessage(w, r, "Não existe opinião com esse id", err.Error(), 400)
+			return
+		}
+
+		jsonFormat.LaunchJsonErrorMessage(w, r, "Ocorreu um erro", err.Error(), 400)
+		app.errorLog.Println(err.Error())
+		return
+	}
+	out, err := json.MarshalIndent(opinion, "", "  ")
+	if err != nil {
+		app.errorLog.Println(err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(out)
+}
+
+func (app *application) GetOpinionByIdUser(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	jsonFormat := launchjson.ApplicationLog{
+		InfoLog:  log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime),
+		ErrorLog: log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile),
+	}
+	userId, _ := strconv.Atoi(id)
+
+	opinion, err := app.DB.GetOpinionByIdUser(userId)
 
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
