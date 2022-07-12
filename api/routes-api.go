@@ -23,6 +23,7 @@ func (app *application) routes() http.Handler {
 	mux.Post("/book", app.IsAuthorized(app.SaveBookHandle))
 	mux.Post("/opinion", app.IsAuthorized(app.SaveOpinionHandle))
 	mux.Get("/opinions", app.IsAuthorized(app.ListOpinionsHandle))
+	mux.Get("/opinions/book/{id}", app.IsAuthorized(app.GetOpinionByIdBook))
 	mux.Post("/user", app.SaveUserHandle)
 	mux.Post("/user/login", app.LoginUserHandle)
 	return mux
