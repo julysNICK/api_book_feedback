@@ -470,6 +470,10 @@ func (app *application) SaveOpinionHandle(w http.ResponseWriter, r *http.Request
 
 		return
 	}
+
+	// formatToken := strings.Split(r.Header["Authorization"][0], " ")
+
+	// userInfo, _ := authentication.ExtractClaims(formatToken[1])
 	txnData = OpinionData{
 		Feedback: txnData.Feedback,
 		IDUser:   txnData.IDUser,
@@ -494,7 +498,7 @@ func (app *application) SaveOpinion(feedback, id_user, id_book string) (int, err
 		return 0, err
 	}
 
-	convIdIdBook, err := strconv.Atoi(id_user)
+	convIdIdBook, err := strconv.Atoi(id_book)
 
 	if err != nil {
 		return 0, err

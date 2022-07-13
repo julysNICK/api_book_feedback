@@ -30,7 +30,7 @@ type Book_info struct {
 	NameAuthor  string    `json:"name_author"`
 	Description string    `json:"description"`
 	Image       string    `json:"image"`
-	YearRelease any       `json:"year_release"`
+	YearRelease string    `json:"year_release"`
 	CreatedAt   time.Time `json:"-"`
 	UpdatedAt   time.Time `json:"-"`
 }
@@ -150,10 +150,13 @@ func (m *DBModel) InsertBook(c Book_info) (int, error) {
 }
 
 func (m *DBModel) GetAllBooks() ([]Book_info, error) {
-	var book []Book_info
-	row, err := m.DB.Query("SELECT * FROM book_info")
 
-	defer m.DB.Close()
+	var book []Book_info
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	row, err := m.DB.QueryContext(ctx, "SELECT * FROM book_info")
 
 	if err != nil {
 		println(err.Error())
@@ -166,7 +169,7 @@ func (m *DBModel) GetAllBooks() ([]Book_info, error) {
 		var nameAuthor string
 		var description string
 		var image string
-		var yearRelease any
+		var yearRelease string
 		var createdAt time.Time
 		var updatedAt time.Time
 		err = row.Scan(&id, &title, &nameAuthor, &description, &image, &yearRelease, &createdAt, &updatedAt)
@@ -374,9 +377,9 @@ func (m *DBModel) InsertOpinions(opinion Opinions) (int, error) {
 
 func (m *DBModel) GetAllOpinions() ([]Opinions, error) {
 	var opinion []Opinions
-	row, err := m.DB.Query("SELECT * FROM opinions")
-
-	defer m.DB.Close()
+	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Second)
+	defer cancel()
+	row, err := m.DB.QueryContext(ctx, "SELECT * FROM opinions")
 
 	if err != nil {
 		println(err.Error())
