@@ -7,9 +7,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-
-func OpenDB(dsn string) (*sql.DB, error){
-	db,err := sql.Open("mysql",dsn)
+func OpenDB(dsn string) (*sql.DB, error) {
+	db, err := sql.Open("mysql", dsn)
 
 	if err != nil {
 		return nil, err
@@ -21,7 +20,6 @@ func OpenDB(dsn string) (*sql.DB, error){
 		return nil, err
 	}
 
-
-	return db,nil
+	return db, nil
 
 }

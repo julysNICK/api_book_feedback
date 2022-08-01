@@ -391,6 +391,36 @@ func (app *application) GetOpinionByIdUser(w http.ResponseWriter, r *http.Reques
 	w.Write(out)
 }
 
+func (app *application) DeleteBookId(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	jsonFormat := launchjson.ApplicationLog{
+		InfoLog:  log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime),
+		ErrorLog: log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile),
+	}
+	userId, _ := strconv.Atoi(id)
+
+	_, err := app.DB.DeleteBook(userId)
+
+	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			jsonFormat.LaunchJsonErrorMessage(w, r, "Não existe livro com esse id", err.Error(), 400)
+			return
+		}
+
+		jsonFormat.LaunchJsonErrorMessage(w, r, "Ocorreu um erro", err.Error(), 400)
+		app.errorLog.Println(err.Error())
+		return
+	}
+	out, err := json.MarshalIndent("Livro exlcuido com sucesso", "", "  ")
+	if err != nil {
+		app.errorLog.Println(err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(out)
+}
+
 func (app *application) ListOpinionsHandle(w http.ResponseWriter, r *http.Request) {
 
 	txnData, err := app.DB.GetAllOpinions()
@@ -427,7 +457,6 @@ func (app *application) SaveOpinionHandle(w http.ResponseWriter, r *http.Request
 		app.errorLog.Println(err)
 	}
 
-	log.Println(strconv.Itoa(txnData.IDBook) == "0")
 	if len(txnData.Feedback) == 0 && strconv.Itoa(txnData.IDBook) == "0" && strconv.Itoa(txnData.IDUser) == "0" {
 		jsonFormat.LaunchJsonErrorMessage(w, r, "Todos os campos são obrigatorios", "", 400)
 		return
@@ -470,10 +499,6 @@ func (app *application) SaveOpinionHandle(w http.ResponseWriter, r *http.Request
 
 		return
 	}
-
-	// formatToken := strings.Split(r.Header["Authorization"][0], " ")
-
-	// userInfo, _ := authentication.ExtractClaims(formatToken[1])
 	txnData = OpinionData{
 		Feedback: txnData.Feedback,
 		IDUser:   txnData.IDUser,
@@ -485,9 +510,14 @@ func (app *application) SaveOpinionHandle(w http.ResponseWriter, r *http.Request
 		app.errorLog.Println(err)
 		return
 	}
-
+	_, _ = app.DB.UpdateOpinionNumbers(txnData.IDUser)
+	_, _ = app.DB.UpdateLevelUp(txnData.IDUser)
+	if errUser != nil {
+		jsonFormat.LaunchJsonErrorMessage(w, r, "Ocorreu um erro no registro do feedback", "", 400)
+		app.errorLog.Println(err)
+		return
+	}
 	jsonFormat.LaunchJsonSuccessMessage(w, r, "Opinião cadastrada com sucesso", strconv.Itoa(id))
-
 }
 
 func (app *application) SaveOpinion(feedback, id_user, id_book string) (int, error) {

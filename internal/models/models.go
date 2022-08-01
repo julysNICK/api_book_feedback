@@ -35,15 +35,26 @@ type Book_info struct {
 	UpdatedAt   time.Time `json:"-"`
 }
 
+// Book is the type for all Book
+type LevelsStruct struct {
+	ID            int       `json:"id"`
+	Level         int       `json:"level"`
+	NumberOpinion int       `json:"number_opinion"`
+	CreatedAt     time.Time `json:"-"`
+	UpdatedAt     time.Time `json:"-"`
+}
+
 // User is the type for all User
 type User struct {
-	ID        int       `json:"id"`
-	Name      string    `json:"name"`
-	Email     string    `json:"email"`
-	Surname   string    `json:"surname"`
-	Password  string    `json:"password"`
-	CreatedAt time.Time `json:"-"`
-	UpdatedAt time.Time `json:"-"`
+	ID            int       `json:"id"`
+	Name          string    `json:"name"`
+	Email         string    `json:"email"`
+	Surname       string    `json:"surname"`
+	Password      string    `json:"password"`
+	NumberOpinion int       `json:"number_Opinion"`
+	LevelNumber   int       `json:"level_number"`
+	CreatedAt     time.Time `json:"-"`
+	UpdatedAt     time.Time `json:"-"`
 }
 
 // Opinions is the type for all Opinions
@@ -183,6 +194,81 @@ func (m *DBModel) GetAllBooks() ([]Book_info, error) {
 	return book, nil
 }
 
+func (m *DBModel) DeleteBook(id int) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	stmt := `
+	delete from book_info where id = ?
+	`
+
+	_, err := m.DB.ExecContext(ctx, stmt,
+		id,
+	)
+	if err != nil {
+		return 0, nil
+	}
+
+	_, errDeleteOpinion := m.DeleteOpinion(id, "book")
+
+	if errDeleteOpinion != nil {
+		return 0, nil
+	}
+
+	return 1, nil
+
+}
+
+func (m *DBModel) DeleteOpinion(id int, tableNameDelete string) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	switch tableNameDelete {
+	case "user":
+		stmt := `
+	 delete from opinions where id_user = ?
+	 `
+		_, err := m.DB.ExecContext(ctx, stmt,
+			id,
+		)
+
+		if err != nil {
+			return 0, nil
+		}
+
+		return 1, nil
+
+	case "book":
+		stmt := `
+	 delete from opinions where id_book = ?
+	 `
+		_, err := m.DB.ExecContext(ctx, stmt,
+			id,
+		)
+
+		if err != nil {
+			return 0, nil
+		}
+
+		return 1, nil
+
+	case "opinion":
+		stmt := `
+	 delete from opinions where id = ?
+	 `
+		_, err := m.DB.ExecContext(ctx, stmt,
+			id,
+		)
+
+		if err != nil {
+			return 0, nil
+		}
+
+		return 1, nil
+	default:
+		return 2, nil
+	}
+}
+
 //----------------------------user---------------------------------
 
 func (m *DBModel) InsertUser(userStruct User) (int, error) {
@@ -229,6 +315,31 @@ func (m *DBModel) FindOneUser(emailUser string) (User, error) {
 		&userSearchBD.Email,
 		&userSearchBD.Surname,
 		&userSearchBD.Password,
+		&userSearchBD.NumberOpinion,
+		&userSearchBD.LevelNumber,
+		&userSearchBD.CreatedAt,
+		&userSearchBD.UpdatedAt,
+	)
+	if err != nil {
+		return userSearchBD, err
+	}
+	return userSearchBD, nil
+}
+func (m *DBModel) FindOneUserById(id int) (User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	var userSearchBD User
+	row := m.DB.QueryRowContext(ctx, `
+						SELECT * FROM users WHERE id = ?
+					`, id)
+	err := row.Scan(
+		&userSearchBD.ID,
+		&userSearchBD.Name,
+		&userSearchBD.Email,
+		&userSearchBD.Surname,
+		&userSearchBD.Password,
+		&userSearchBD.NumberOpinion,
+		&userSearchBD.LevelNumber,
 		&userSearchBD.CreatedAt,
 		&userSearchBD.UpdatedAt,
 	)
@@ -265,7 +376,120 @@ func (m *DBModel) ExistUser(id int) (bool, error) {
 
 }
 
-//----------------------------opinions---------------------------------
+func (m *DBModel) UpdateOpinionNumbers(id int) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	result, err := m.FindOneUserById(id)
+	if err != nil {
+		println(err.Error())
+		return 0, err
+	}
+
+	sumOpinionNumber := result.NumberOpinion + 1
+
+	stmt := `UPDATE 
+			users
+		SET 
+			number_opinion = ? 
+		where id = ?
+					`
+
+	_, err = m.DB.ExecContext(ctx, stmt,
+		sumOpinionNumber, id)
+
+	if err != nil {
+		println(err.Error())
+		return 0, err
+	}
+
+	return int(id), nil
+
+}
+
+func (m *DBModel) FindManyLevels() ([]LevelsStruct, error) {
+	var levels []LevelsStruct
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	row, err := m.DB.QueryContext(ctx, "SELECT * FROM levels")
+
+	if err != nil {
+		println(err.Error())
+		return nil, err
+	}
+
+	for row.Next() {
+		var id int
+		var level int
+		var numberOpinion int
+		var createdAt time.Time
+		var updatedAt time.Time
+		err = row.Scan(&id, &level, &numberOpinion, &createdAt, &updatedAt)
+		if err != nil {
+			println(err.Error())
+		}
+
+		levels = append(levels, LevelsStruct{ID: id, Level: level, NumberOpinion: numberOpinion, CreatedAt: createdAt, UpdatedAt: updatedAt})
+	}
+
+	return levels, nil
+}
+
+func IsReadyLevelUp(resultsArrayLevel []LevelsStruct, resultUser User) []LevelsStruct {
+	var levelsReady []LevelsStruct
+	for result := range resultsArrayLevel {
+		if resultUser.NumberOpinion == resultsArrayLevel[result].NumberOpinion {
+			levelsReady = append(levelsReady, resultsArrayLevel[result])
+		}
+	}
+	return levelsReady
+}
+
+func (m *DBModel) UpdateLevelUp(id int) (int, error) {
+	resultsArrayLevel, err := m.FindManyLevels()
+	if err != nil {
+		println(err.Error())
+		return 0, err
+	}
+	resultUser, err := m.FindOneUserById(id)
+	if err != nil {
+		println(err.Error())
+		return 0, err
+	}
+
+	levelsUp := IsReadyLevelUp(resultsArrayLevel, resultUser)
+
+	if len(levelsUp) > 0 {
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
+		if err != nil {
+			println(err.Error())
+			return 0, err
+		}
+
+		stmt := `UPDATE 
+			users
+		SET 
+			level_number = ? 
+		where id = ?
+					`
+
+		_, err = m.DB.ExecContext(ctx, stmt,
+			levelsUp[0].Level, id)
+
+		if err != nil {
+			println(err.Error())
+			return 0, err
+		}
+		return 1, nil
+
+	} else {
+		return 0, nil
+
+	}
+}
 
 func (m *DBModel) ExistOpinion(id int) (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)

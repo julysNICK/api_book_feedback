@@ -21,6 +21,7 @@ func (app *application) routes() http.Handler {
 	mux.Get("/book/{id}", app.GetBookById)
 	mux.Get("/book", app.ListBooksHandle)
 	mux.Post("/book", app.IsAuthorized(app.SaveBookHandle))
+	mux.Delete("/book/{id}", app.IsAuthorized(app.DeleteBookId))
 	mux.Post("/opinion", app.IsAuthorized(app.SaveOpinionHandle))
 	mux.Get("/opinions", app.IsAuthorized(app.ListOpinionsHandle))
 	mux.Get("/opinions/book/{id}", app.IsAuthorized(app.GetOpinionByIdBook))

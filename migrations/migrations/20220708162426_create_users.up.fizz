@@ -4,9 +4,11 @@ create_table("users") {
   t.Column("email", "string", {default: ""})
   t.Column("surname", "string", {"default": ""})
 	t.Column("password", "string", {"default": ""})
+	t.Column("number_opinion", "integer", {default: 0})
+	t.Column("level_number", "integer", {default: 1})
 }
 
 sql("alter table users alter column created_at set default now();")
 sql("alter table users alter column updated_at set default now();")
 
-sql("insert into users (name,  email, surname, password, created_at, updated_at) values ('Jonh', 'userAle@email.com', 'jonjon', '123456789', now(), now());")
+sql("insert into users (name,  email, surname, password, number_opinion, level_number, created_at, updated_at) values ('Jonh', 'userAle@email.com', 'jonjon', '123456789', 0, 1,now(), now());")

@@ -15,18 +15,17 @@ const version = "1.0.0"
 
 type config struct {
 	port int
-	env string
-	db  struct {
+	env  string
+	db   struct {
 		dsn string
 	}
-
 }
 type application struct {
-	config 		config
-	infoLog 	*log.Logger
-	errorLog 	*log.Logger
-	version 	string
-	DB 				models.DBModel
+	config   config
+	infoLog  *log.Logger
+	errorLog *log.Logger
+	version  string
+	DB       models.DBModel
 }
 
 func (app *application) serve() error {
@@ -45,14 +44,12 @@ func (app *application) serve() error {
 }
 
 func main() {
-		var cfg config
+	var cfg config
 
 	flag.IntVar(&cfg.port, "port", 4001, "Server port to listen on")
 	flag.StringVar(&cfg.env, "env", "development", "Application environment {development|production|maintenance}")
 	flag.StringVar(&cfg.db.dsn, "dsn", "julysmartins@fedora:root@tcp(localhost:3306)/book?parseTime=true&tls=false", "DSN")
 	flag.Parse()
-
-
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
@@ -65,13 +62,12 @@ func main() {
 
 	defer conn.Close()
 
-
 	app := &application{
 		config:   cfg,
 		infoLog:  infoLog,
 		errorLog: errorLog,
 		version:  version,
-		DB: models.DBModel{DB: conn},
+		DB:       models.DBModel{DB: conn},
 	}
 
 	err = app.serve()

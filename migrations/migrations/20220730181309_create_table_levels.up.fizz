@@ -1,0 +1,12 @@
+create_table("levels") {
+	t.Column("id", "integer", {primary: true})
+	t.Column("level", "integer", {default: 1})
+	t.Column("number_the_opinion", "integer", {default: 0})
+	t.Timestamps()
+}
+
+
+sql("alter table levels alter column created_at set default now();")
+sql("alter table levels alter column updated_at set default now();")
+
+sql("insert into levels (level,  number_the_opinion, created_at, updated_at) values (1, 5,now(), now());")
