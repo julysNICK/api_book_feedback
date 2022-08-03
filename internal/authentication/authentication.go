@@ -76,3 +76,27 @@ func ValidJwt(tokenRecive string) (string, error) {
 		return "", err
 	}
 }
+
+func ExtractIdOfJwt(tokenRecive string) (int, error) {
+	mySigningKey := []byte("AllYourBase")
+	formatToken := strings.Split(tokenRecive, " ")
+	type MyCustomClaims struct {
+		ID    int    `json:"id"`
+		Email string `json:"email"`
+		jwt.StandardClaims
+	}
+	token, err := jwt.ParseWithClaims(formatToken[1], &MyCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return mySigningKey, nil
+	})
+
+	if err != nil {
+		println(err.Error())
+		return 0, nil
+	}
+
+	if _, ok := token.Claims.(*MyCustomClaims); ok && token.Valid {
+		return 1, nil
+	} else {
+		return 0, err
+	}
+}

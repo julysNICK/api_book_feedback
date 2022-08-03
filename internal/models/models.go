@@ -271,6 +271,35 @@ func (m *DBModel) DeleteOpinion(id int, tableNameDelete string) (int, error) {
 
 //----------------------------user---------------------------------
 
+func (m *DBModel) GetProfile(id int) (User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	var userSearchBD User
+	row := m.DB.QueryRowContext(ctx, `
+		select 
+			*
+		from 
+			users 
+		where id = ?`, id)
+	err := row.Scan(
+		&userSearchBD.ID,
+		&userSearchBD.Name,
+		&userSearchBD.Email,
+		&userSearchBD.Surname,
+		&userSearchBD.Password,
+		&userSearchBD.NumberOpinion,
+		&userSearchBD.LevelNumber,
+		&userSearchBD.CreatedAt,
+		&userSearchBD.UpdatedAt,
+	)
+
+	if err != nil {
+		return userSearchBD, err
+	}
+
+	return userSearchBD, nil
+}
+
 func (m *DBModel) InsertUser(userStruct User) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
