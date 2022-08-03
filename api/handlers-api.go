@@ -3,13 +3,15 @@ package main
 import (
 	"encoding/json"
 	"log"
-	"mybook/internal/authentication"
-	launchjson "mybook/internal/launchJson"
-	"mybook/internal/models"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/julysNICK/api_book_feedback/internal/authentication"
+	"github.com/julysNICK/api_book_feedback/internal/models"
+
+	launchjson "github.com/julysNICK/api_book_feedback/internal/launchJson"
 
 	"github.com/go-chi/chi/v5"
 	"golang.org/x/crypto/bcrypt"
