@@ -1,0 +1,21 @@
+version: '3'
+services:
+    db:
+      image: mariadb:latest
+      container_name: "test_db"
+      ports:
+        - "3306:3306"
+      volumes:
+         - mysql_data:/var/lib/mysql
+      build:
+          context: .
+          dockerfile: db.Dockerfile
+      networks:
+          - default
+      environment:
+                - MYSQL_ROOT_PASSWORD=root
+                - MYSQL_PASSWORD=root
+                - MYSQL_USER=julysmartins@fedora
+                - MYSQL_DATABASE=book
+      restart: always
+      command: --default-authentication-plugin=mysql_native_password

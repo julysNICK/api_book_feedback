@@ -50,7 +50,7 @@ func main() {
 
 	flag.IntVar(&cfg.port, "port", 4001, "Server port to listen on")
 	flag.StringVar(&cfg.env, "env", "development", "Application environment {development|production|maintenance}")
-	flag.StringVar(&cfg.db.dsn, "dsn", "julysmartins@fedora:root@tcp(127.0.0.1:3306)/book?parseTime=true&tls=false", "DSN")
+	flag.StringVar(&cfg.db.dsn, "dsn", "root:root@tcp(mariadb_api_book_container)/book?parseTime=true&tls=false", "DSN")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)

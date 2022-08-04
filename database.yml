@@ -1,7 +1,7 @@
 development:
   dialect: mysql
   database: book
-  user: julysmartins@fedora
+  user: root
   password: root
-  host: 127.0.0.1
+  host:  mariadb_api_book_container
   pool: 5
